@@ -1,6 +1,7 @@
 var LocalSearch = (function () {
 	var Game;
 	var iterations;
+	var steps;
 	
 	return {
 		config : function(newGame) {
@@ -11,6 +12,10 @@ var LocalSearch = (function () {
 			return iterations;
 		},
 		
+		getSteps : function() {
+			return steps;
+		},
+		
 		search : function(start, max_steps) {
 			// Set the start array of queens
 			var current = start;
@@ -19,7 +24,9 @@ var LocalSearch = (function () {
 			
 			// Loop through and change values for the queens,
 			// limited by the max_steps variable
+			steps = new Array();
 			for (var i = 0; i < max_steps; i++) {
+				var object = {};
 				
 				// Create a new array to store all the queens
 				// that conflicts with other ones
@@ -39,6 +46,7 @@ var LocalSearch = (function () {
 				// Check if we found any conflicts.
 				// If not, a solution has been found
 				if (conflicts.length === 0) {
+					
 					iterations = i;
 					return current;
 				}
@@ -52,21 +60,35 @@ var LocalSearch = (function () {
 				var potentials;
 				var min = current.length;
 				for (var j = 0; j < row_conflicts.length; j++) {
-					if (row_conflicts[j] < min) {
+					// Do not store current position
+					if (j == current[queen]) {
+						continue;
+					
+					// Create a new list of potentials if less then current
+					} else if (row_conflicts[j] < min) {
 						potensials = new Array();
 						potensials.push(j);
 						min = row_conflicts[j];
+					
+					// Add to current list of potentials	
 					} else if (row_conflicts[j] == min) {
 						potensials.push(j);
 					}
 				}
 				
-				// Choose a random location to move to from the 
-				// list of potensials, and store the new position.
-				index = Math.floor(Math.random() * potensials.length);
-				current[queen] = potensials[index];
+				// Save the new state only if it's an improvement
+				if (potensials.length > 0) {
+					object.queen = queen;
+					object.conflicts = row_conflicts;
+					object.board = LocalSearch.deepCopy(current);
 				
-				// LocalSearch.printBoard(current);
+					steps[i] = object;
+				
+					// Choose a random location to move to from the 
+					// list of potensials, and store the new position.
+					index = Math.floor(Math.random() * potensials.length);
+					current[queen] = potensials[index];
+				}
 			}
 			
 			return false;
@@ -83,9 +105,15 @@ var LocalSearch = (function () {
 				board += str + ' |\n';
 				border += '---';
 			}
-			console.log(border);
-			console.log(board);
-			console.log(border);
+			return border + '\n' + board + '\n' + border;
+		},
+		
+		deepCopy : function(queens) {
+			var newArr = new Array();
+			for (var i = 0; i < queens.length; i++) {
+				newArr[i] = queens[i];
+			}
+			return newArr;
 		}
 	};
 	

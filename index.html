@@ -1,32 +1,219 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+	<style>
+	div#side {
+		float: left;
+	}
+	
+	div#inputs {
+		left: 30px;
+		top: 100px;
+		position: relative;
+	}
+	
+	.center {
+		width: 200px;
+		margin: 0 auto;
+		text-align: center;	
+	}
+	table {
+	  border: 5px black solid;
+	  font-size: 20px;
+	}
 
+	td {
+	  height: 40px;
+	  width: 40px;
+	  text-align: center;
+	}
+
+	tr:nth-child(even) > td:nth-child(odd), tr:nth-child(odd) > td:nth-child(even){
+		background: #f5f6f6; /* Old browsers */
+
+		background: -moz-linear-gradient(top, #f5f6f6 0%, #cfd0d3 23%, #f5f6f6 100%); /* FF3.6+ */
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f5f6f6), color-stop(23%,#cfd0d3), color-stop(100%,#f5f6f6)); /* Chrome,Safari4+ */
+		background: -webkit-linear-gradient(top, #f5f6f6 0%,#cfd0d3 23%,#f5f6f6 100%); /* Chrome10+,Safari5.1+ */
+		background: -o-linear-gradient(top, #f5f6f6 0%,#cfd0d3 23%,#f5f6f6 100%); /* Opera 11.10+ */
+		background: -ms-linear-gradient(top, #f5f6f6 0%,#cfd0d3 23%,#f5f6f6 100%); /* IE10+ */
+		background: linear-gradient(top, #f5f6f6 0%,#cfd0d3 23%,#f5f6f6 100%); /* W3C */
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f5f6f6', endColorstr='#f5f6f6',GradientType=0 ); /* IE6-8 */
+	}
+	</style>
+	
+	 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 	
 	<!-- The game used in the solution -->
 	<script src="js/game.js"></script>
 	
-	
+	<!-- The local search algorithm -->
 	<script src="js/local-search.js"></script>
 	<script>
-	window.onload = function() {
-		var k = 16;
-		var max_steps = 1000;
+	// Variables
+	var k = 8;
+	var max_steps = 1000;
 	
-		var localSearch = LocalSearch;
-		var game = Game;
+	// DOM elements
+	var $form;
+	var $k;
+	var $steps;
+	var $table;
+	var $next;
+	var $prev;
+	var $current;
+	
+	// The algorithm
+	var lSearch = LocalSearch;
+	var game = Game;
+	
+	// Display of solution
+	var currentStep = 0;
+	var solution;
+	var steps;
+	
+	
+	$(document).ready(function() {
+		// Set up search
+		lSearch.config(game);
+		
+		// Get DOM elements
+		$k = $('input[name="k"]');
+		$steps = $('input[name="steps"]');
+		$form = $('form');
+		$table = $('#tbl');
+		$next = $('#next');
+		$prev = $('#prev');
+		$current = $('#current');
+		
+		// Set up search on submit of form
+		$form.on('submit', function(e) {
+			e.preventDefault();
+		
+			k = $k.val();
+			steps = $steps.val();
+			
+			solution = findSolution();
+			if (solution !== false) {
+				currentStep = 0;
+				steps = lSearch.getSteps();
+				var object = {};
+				object.board = solution;
+				
+				steps.push(object);
+				renderBoard();
+				renderStep(currentStep);
+			}
+		});
+		
+		// Listener for next button
+		$next.on('click', function() {
+			if (currentStep == 0) {
+				$prev.attr('disabled', false);
+			} 
+			renderBoard();
+			renderStep(++currentStep);
+			updateCounter();
+			if (currentStep == steps.length - 1) {
+				$next.attr('disabled', true);
+			}
+			
+		});
+		
+		// Listener for previous button
+		$prev.on('click', function() {
+			if (currentStep == steps.length - 1) {
+				$next.attr('disabled', false);
+			} 
+			renderBoard();
+			renderStep(--currentStep);
+			updateCounter();
+			if (currentStep == 0) {
+				$prev.attr('disabled', true);
+			
+			}
+		});
+		
+	});
+	
+	// Set the current counter
+	function updateCounter() {
+		$current.get(0).innerHTML = currentStep;
+	}
+	
+	// Empties and draws the table
+	function renderBoard() {
+		$table.empty();
+		for (var i = 0; i < k; i++) {
+			var $tr = $('<tr />');
+			for (var j = 0; j < k; j++) {
+				$tr.append('<td />');
+			}
+			$table.append($tr);
+		}
+	}
+	
+	// Renders a step on the board given an index
+	function renderStep(index) {
+		var current = steps[index].board;
+		for (var i = 0; i < k; i++) {
+			var tr = $table.find('tr').get(i);
+			var td = $(tr).find('td').get(current[i]);
+			td.innerHTML = '&#9813;';
+		}
+		
+		if (steps[index].queen !== undefined) {
+			// Get row
+			var i = steps[index].queen;
+			var tr = $table.find('tr').get(i);
+			
+			for (var j = 0; j < k; j++) {
+				if (j !== current[i]) {
+					var td = $(tr).find('td').get(j);
+					td.innerHTML = steps[index].conflicts[j];
+					$(td).css('color', 'red');
+				}
+			}
+		}
+	}
+	
+	// Function to generate a new board and find a solution
+	function findSolution() {
+		// Print out board before we run the algorithm
 		var board = game.genRandomBoard(k);
+		
+		// Print out result
+		var result = lSearch.search(board, max_steps);
+		if (result === false) {
+			return false;
+		} else {
+			return result;
+		}
+	}
 	
-		localSearch.config(Game);
-		var result = localSearch.search(board, max_steps);
-		localSearch.printBoard(result);
-		var iter = localSearch.numIterations();
-		console.log('number of iterations: ' + iter);
-	};
 	</script>
 <title>Constraint Satisfaction Problem</title>
 </head>
 <body>
-	<p>Text</p>
+	<div id="side">
+		<h3>Solution</h3>
+		<table id="tbl">
+		</table>
+		<div class="center">
+			<button id="prev" disabled>Previous</button>
+			<span id="current">0</span>
+			<button id="next">Next</button>
+		</div>
+	</div>
+	<div id="inputs">
+		<form>
+			<label>K:
+				<input type="number" name="k" value="8" />
+			</label>
+			<label>Max steps:
+				<input type="number" name="steps" value="1000" />
+			</label>
+			<input type="submit" value="Run" />
+		</form>
+	</div>
 </body>
 </html>
