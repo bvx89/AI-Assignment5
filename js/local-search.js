@@ -1,14 +1,21 @@
 var LocalSearch = (function () {
 	var Game;
+	var iterations;
 	
 	return {
 		config : function(newGame) {
 			Game = newGame;
 		},
 		
+		numIterations : function() {
+			return iterations;
+		},
+		
 		search : function(start, max_steps) {
 			// Set the start array of queens
 			var current = start;
+			
+			LocalSearch.printBoard(current);
 			
 			// Loop through and change values for the queens,
 			// limited by the max_steps variable
@@ -21,24 +28,18 @@ var LocalSearch = (function () {
 					// array of all the conflicts for each column
 					var row_conflicts = Game.conflict(current, j);
 					
-					// Find the lowest number of conflict
-					var min = current.length;
-					for (var k in row_conflicts) {
-						if (row_conflics[j] < min) {
-							min = row_conflics[k];
-						}
-					}
-					
-					// If the current value is not the lowest,
-					// push this queen to the conflicts list.
-					if (row_conflicts[j] > min)
+					// If the current position has an error,
+					// Push it to the array of conflicts
+					if (row_conflicts[current[j]] !== 0) {
 						conflicts.push(j);
+					}
 					
 				}
 				
 				// Check if we found any conflicts.
 				// If not, a solution has been found
 				if (conflicts.length === 0) {
+					iterations = i;
 					return current;
 				}
 				
@@ -51,11 +52,12 @@ var LocalSearch = (function () {
 				var potentials;
 				var min = current.length;
 				for (var j = 0; j < row_conflicts.length; j++) {
-					if (row_conflicts[i] < min) {
+					if (row_conflicts[j] < min) {
 						potensials = new Array();
-						potensials.push(i);
-					} else if (row_conflicts[i] == min) {
-						potensials.push(i);
+						potensials.push(j);
+						min = row_conflicts[j];
+					} else if (row_conflicts[j] == min) {
+						potensials.push(j);
 					}
 				}
 				
@@ -63,10 +65,24 @@ var LocalSearch = (function () {
 				// list of potensials, and store the new position.
 				index = Math.floor(Math.random() * potensials.length);
 				current[queen] = potensials[index];
+				
+				// LocalSearch.printBoard(current);
 			}
 			
 			return false;
 		},
+		
+		printBoard : function(queens) {
+			console.log('----------------------');
+			for (var i = 0; i < queens.length; i++) {
+				var str = '';
+				for (var j = 0; j < queens.length; j++) {
+					str += (queens[i] == j ? ' Q ' : ' - ');
+				}
+				console.log(str);
+			}
+			console.log('----------------------');
+		}
 	};
 	
 }());

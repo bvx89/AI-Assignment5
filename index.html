@@ -1,14 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<!-- Library-->
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
 	
 	<!-- The game used in the solution -->
 	<script src="js/game.js"></script>
 	
 	
 	<script src="js/local-search.js"></script>
+	<script>
+	window.onload = function() {
+		var k = 8;
+		var max_steps = 1000;
+	
+		var localSearch = LocalSearch;
+		var game = Game;
+		var board = game.genRandomBoard(k);
+	
+		localSearch.config(Game);
+		var result = localSearch.search(board, max_steps);
+		localSearch.printBoard(result);
+		var iter = localSearch.numIterations();
+		console.log('number of iterations: ' + iter);
+	};
+	</script>
 <title>Constraint Satisfaction Problem</title>
 </head>
 <body>
