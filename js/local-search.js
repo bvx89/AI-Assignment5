@@ -73,15 +73,19 @@ var LocalSearch = (function () {
 		},
 		
 		printBoard : function(queens) {
-			console.log('----------------------');
+			var border = '----';
+			var board = '';
 			for (var i = 0; i < queens.length; i++) {
-				var str = '';
+				var str = '| ';
 				for (var j = 0; j < queens.length; j++) {
 					str += (queens[i] == j ? ' Q ' : ' - ');
 				}
-				console.log(str);
+				board += str + ' |\n';
+				border += '---';
 			}
-			console.log('----------------------');
+			console.log(border);
+			console.log(board);
+			console.log(border);
 		}
 	};
 	
