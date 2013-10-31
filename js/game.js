@@ -1,10 +1,8 @@
 var Game = (function () {
-	var k;
-	
 	return {
 		//Checks whether two queens attack eachother
 		//Returns true if no collisions are detected
-		checkPair(x1, y1, x2, y2){
+		checkPair : function(x1, y1, x2, y2){
 			if(	x1==x2 || 	//checks for column conflicts
 			x1-y1==x2-y2 || //checks for diagonal(down right) conflicts
 			y1-x1==y2-x2){ 	//checks for diagonal(down left) conflicts
@@ -12,10 +10,10 @@ var Game = (function () {
 			}else{
 				return true;
 			}
-		}
+		},
 		//Checks all columns for a row for collisions with the other queens on the board
 		//Returns a list over conflicts in each column for a given row
-		confict(csp, currentQueen){
+		conflict : function(csp, currentQueen){
 			var conflicts=new Array();
 			//Loops through all columns
 			for(var column=0; x<csp.length; column++){
@@ -33,14 +31,14 @@ var Game = (function () {
 			}
 			//Returns a list of collisions
 			return conflicts;
-		}
-
-		config : function(numQueens) {
-			k = numQueens;
 		},
 		
-		genRandomBoard : function() {
-			
+		genRandomBoard : function(k) {
+			var queens = new Array();
+			for (var i = 0; i < k; i++) {
+				queens[i] = Math.floor(Math.random() * k);
+			}
+			return queens;
 		},
 	}
 	
